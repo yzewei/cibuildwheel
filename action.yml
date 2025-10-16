@@ -24,16 +24,13 @@ branding:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@v6
-      id: python
-      with:
-        python-version: "3.11 - 3.13"
-        update-environment: false
-
     - id: cibw
+      env:
+        PIP_INDEX_URL: "https://pypi.tuna.tsinghua.edu.cn/simple"
+        PIP_EXTRA_INDEX_URL: "https://lpypi.loongnix.cn/loongson/pypi/+simple"
       run: |
         # Install cibuildwheel
-        "${{ steps.python.outputs.python-path }}" -u << "EOF"
+        "python3" -u << "EOF"
         import os
         import shutil
         import sys
@@ -53,7 +50,15 @@ runs:
             def post_setup(self, context):
                 super().post_setup(context)
                 self.bin_path = Path(context.env_exe).parent
-                run([sys.executable, "-m", "pip", "--python", context.env_exe, "install", r"${{ github.action_path }}"], check=True)
+                run([
+                    sys.executable,
+                    "-m", "pip",
+                    "--python", context.env_exe,
+                    "install",
+                    "-i", "https://lpypi.loongnix.cn/loongson/pypi/+simple",
+                    "http://lpypi.loongnix.cn/loongson/pypi/+f/3df/1261f9e6e6eec/cibuildwheel-2.22.0-py3-none-any.whl#sha256=3df1261f9e6e6eec40c3416fb0bcd967a841072b8353c322334310a36e187018"
+                ], check=True)
+                #                run([sys.executable, "-m", "pip", "--python", context.env_exe, "install", r"${{ github.action_path }}"], check=True)
 
 
         print("::group::Install cibuildwheel")
